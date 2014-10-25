@@ -5,7 +5,7 @@
 
 #define PROG_VERSION	1
 #define PROG_SUBVERSION	0
-#define PROG_REVISION	0
+#define PROG_REVISION	1
 
 #define champs(n,tab,file) for (int i=n-1; i>=0; i--){ tab[i] = fgetc (file); }
 
@@ -36,7 +36,8 @@ int isBitmapHeaderCorrect(BMP_HEADER *header);
 int getBit(char *m, int n);
 unsigned char *loadBitmapDatas(FILE *file, BMP_HEADER *header);
 int saveBitmapDatas(FILE *file, BMP_HEADER *header, unsigned char *pixels);
-void createPermutationFunction(unsigned int *tab, int size, unsigned int key);
-int hideText(char *message, int *size, unsigned int *tab, unsigned char *pixels);
+void createPermutationFunction(unsigned int *tab, unsigned int size, unsigned int key);
+int hideText(char *message, unsigned int *size, unsigned int *tab, unsigned char *pixels);
+int retrieveText(char *message, unsigned int *tab, unsigned char *pixels);
 
 #endif /* STEGANO_H */

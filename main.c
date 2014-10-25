@@ -13,6 +13,9 @@
 1) -g avec argument optionnel. Si argument, c'est le fichier dest, sinon, prendre fichier source.bmp et renvoyer source_ok.bmp.
 2) Proposer une option pour écrire le message à cacher dans l'appel du programme.
 3) Proposer via une option d'envoyer un fichier à cacher dans l'image.
+4) free (message) impossible pour l'option -g, donc memoire non désalloué avant la fin du programme.
+5) Tester le message entré pour vérifier qu'il ne contient pas de caractères interdit.
+6) Docummenter beaucoup plus le code
 */
 
 static void usage (int status);
@@ -22,7 +25,8 @@ static void retrieveMessage(FILE *imgSrc, unsigned int key);
 
 bool generate = false;
 bool retrieve = false;
-int size = 0;
+unsigned int size = 0;
+unsigned int permutationSize = 0;
 
 
 int main (int argc, char *argv[])
@@ -149,9 +153,6 @@ int main (int argc, char *argv[])
 
 	if (generate)
 	{
-		//char *message = "A"; // 01000001
-
-		//size = strlen (message);
 		hideMessage(imgSrc, imgDest, message, key);
 	}
 	
@@ -173,12 +174,12 @@ static void usage (int status)
 {
   	if (status == EXIT_SUCCESS)
     {
-      	fprintf (stdout, "Usage: ./stegano [OPTION] FILE\n"
-      					 "Usage: ./stegano -g SOURCE DESTINATION CLE\n"
-      					 "Usage: ./stegano -r SOURCE CLE\n"
+      	fprintf (stdout, "Usage: ./%s [OPTION] FILE\n"
+      					 "Usage: ./%s -g SOURCE DESTINATION CLE \"MESSAGE\"\n"
+      					 "Usage: ./%s -r SOURCE CLE\n"
 				         "Introduit un message caché dans une image au format BMP.\n"
 				         "   -V\t--version\taffiche la version et quitte\n"
-				         "   -h\t--help\t\taffiche l'aide\n");
+				         "   -h\t--help\t\taffiche l'aide\n", PROG_NAME, PROG_NAME, PROG_NAME);
     }
   	else
     {
@@ -207,7 +208,6 @@ static void version (void)
 ***********************************************************/
 static void hideMessage(FILE *imgSrc, FILE *imgDest, char *message, unsigned int key)
 {
-	//FILE *imgDest = NULL;
   	BMP_HEADER *header = NULL;
   	unsigned int *permutation = NULL;
   	unsigned char *pixels = NULL;
@@ -218,14 +218,6 @@ static void hideMessage(FILE *imgSrc, FILE *imgDest, char *message, unsigned int
       	fprintf (stderr, "stegano: error: out of memory !");
       	exit (EXIT_FAILURE);
     }
-
-    /* Initialisation of permutation */
-	if ((permutation = malloc (4000 * sizeof (*permutation))) == NULL)
-    {
-      	fprintf (stderr, "stegano: error: out of memory !");
-      	exit (EXIT_FAILURE);
-    }
-
 
 	if (loadBitmapHeader(imgSrc, header) == 0)
 	{
@@ -239,11 +231,20 @@ static void hideMessage(FILE *imgSrc, FILE *imgDest, char *message, unsigned int
 		exit (EXIT_FAILURE);
 	}
 
+	permutationSize = header->bitmapDataSize;
+
+    /* Initialisation of permutation */
+	if ((permutation = malloc (permutationSize * sizeof (*permutation))) == NULL)
+    {
+      	fprintf (stderr, "stegano: error: out of memory !");
+      	exit (EXIT_FAILURE);
+    }
+
 	//print_header (header);
 
 	pixels = loadBitmapDatas (imgSrc, header);
 
-	createPermutationFunction (permutation, 4000, key);
+	createPermutationFunction (permutation, permutationSize, key);
 
 	if (hideText(message, &size, permutation, pixels) == 0)
 	{
@@ -275,7 +276,7 @@ static void retrieveMessage(FILE *imgSrc, unsigned int key)
   	unsigned char *pixels = NULL;
   	char *message = NULL;
 
-  	int nbZero = 0, i = 0, bitOffset = 0;
+  	//int nbZero = 0, i = 0, bitOffset = 0;
 
   	/* Initialisation of header */
 	if ((header = malloc (sizeof (*header))) == NULL)
@@ -296,9 +297,10 @@ static void retrieveMessage(FILE *imgSrc, unsigned int key)
 		exit (EXIT_FAILURE);
 	}
 
+	permutationSize = header->bitmapDataSize;
+
     /* Initialisation of permutation */ 
-	//if ((permutation = malloc (header->bitmapDataSize * sizeof (*permutation))) == NULL)
-	if ((permutation = malloc (4000 * sizeof (*permutation))) == NULL)
+	if ((permutation = malloc (permutationSize * sizeof (*permutation))) == NULL)
     {
       	fprintf (stderr, "stegano: error: out of memory !");
       	exit (EXIT_FAILURE);
@@ -306,8 +308,7 @@ static void retrieveMessage(FILE *imgSrc, unsigned int key)
 
     /* Initialisation of message */
     // Nombre d'octets modifiable / 8 = Nombre d'octets max du message
-	//if ((message = malloc ((header->bitmapDataSize/8) * sizeof (*message))) == NULL)
-	if ((message = malloc ((4000 / 8) * sizeof (*message))) == NULL)
+	if ((message = malloc ((permutationSize / 8) * sizeof (*message))) == NULL)
     {
       	fprintf (stderr, "stegano: error: out of memory !");
       	exit (EXIT_FAILURE);
@@ -317,41 +318,12 @@ static void retrieveMessage(FILE *imgSrc, unsigned int key)
 
 	pixels = loadBitmapDatas (imgSrc, header);
 
-	createPermutationFunction (permutation, 4000, key);
+	createPermutationFunction (permutation, permutationSize, key);
 
-	while (nbZero < 8)
+	if (retrieveText(message, permutation, pixels) == 0)
 	{
-		int octet = permutation[i];
-		int bit = pixels[octet] & 1;
-
-		if (bit == 0)
-		{
-			nbZero++;
-		}
-		else
-		{
-			nbZero = 0;
-		}
-
-		i++;
-
-		if (bit == 0)
-		{
-			message[bitOffset] &= ~1;
-		}
-		else
-		{
-			message[bitOffset] |= 1;
-		}
-
-		if ((i % 8) == 0)
-		{
-			bitOffset++;
-		}
-		else
-		{
-			message[bitOffset] <<= 1;
-		}
+		fprintf (stderr, "stegano: error: hidetext failure\n");
+		exit (EXIT_FAILURE);
 	}
 
 	fprintf(stdout, "message = '%s'\n", message);

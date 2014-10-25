@@ -532,7 +532,7 @@ int saveBitmapDatas(FILE *file, BMP_HEADER *header, unsigned char *pixels)
 /***********************************************************
             createPermutationFunction function
 ***********************************************************/
-void createPermutationFunction(unsigned int *tab, int size, unsigned int key)
+void createPermutationFunction(unsigned int *tab, unsigned int size, unsigned int key)
 {
 	srand (key);
 
@@ -540,9 +540,7 @@ void createPermutationFunction(unsigned int *tab, int size, unsigned int key)
 	// Pb car i est un int. Tester avec double, long long double, etc...
   	for (unsigned int i = 0; i < size; i++)
     {
-    	//printf("%d\n", i);
     	tab[i] = i;
-    	//printf("tab[%d] = %d\n", i, tab[i]);
     }
 
   	// On crée l'aléatoire sur la 1ere ligne
@@ -568,9 +566,9 @@ void createPermutationFunction(unsigned int *tab, int size, unsigned int key)
 /***********************************************************
             	hideText function
 ***********************************************************/
-int hideText(char *message, int *size, unsigned int *tab, unsigned char *pixels)
+int hideText(char *message, unsigned int *size, unsigned int *tab, unsigned char *pixels)
 {
-	for (int i=0; i<((*size)*8); i++)
+	for (unsigned int i=0; i<((*size)*8); i++)
 	{
 		int octet = tab[i];
 
@@ -586,11 +584,55 @@ int hideText(char *message, int *size, unsigned int *tab, unsigned char *pixels)
 		}
 	}
 
-	for (int i=((*size)*8); i<(((*size)+1)*8); i++)
+	for (unsigned int i=((*size)*8); i<(((*size)+1)*8); i++)
 	{
 		int octet = tab[i];
 
 		pixels[octet] &= ~1;
+	}
+
+	return 1;
+}
+
+int retrieveText(char *message, unsigned int *tab, unsigned char *pixels)
+{
+	int nbZero = 0, i = 0, bitOffset = 0, octet = 0, bit = 0;
+
+	while (nbZero < 8)
+	{
+		octet = tab[i];
+		bit = pixels[octet] & 1;
+
+		if (bit == 0)
+		{
+			nbZero++;
+			message[bitOffset] &= ~1;
+		}
+		else
+		{
+			nbZero = 0;
+			message[bitOffset] |= 1;
+		}
+
+		i++;
+
+		/*if (bit == 0)
+		{
+			message[bitOffset] &= ~1;
+		}
+		else
+		{
+			message[bitOffset] |= 1;
+		}*/
+
+		if ((i % 8) == 0)
+		{
+			bitOffset++;
+		}
+		else
+		{
+			message[bitOffset] <<= 1;
+		}
 	}
 
 	return 1;
