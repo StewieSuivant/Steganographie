@@ -9,7 +9,7 @@
 #include "stegano.h"
 
 /* IDEES D'AMELIORATION
-0) Limité à 499 caractères pour le moment.
+0) Limité à 499 caractères pour le moment pour le -r (due à la taille du tableau de permutation).
 1) -g avec argument optionnel. Si argument, c'est le fichier dest, sinon, prendre fichier source.bmp et renvoyer source_ok.bmp.
 2) Proposer une option pour écrire le message à cacher dans l'appel du programme.
 3) Proposer via une option d'envoyer un fichier à cacher dans l'image.
@@ -284,20 +284,6 @@ static void retrieveMessage(FILE *imgSrc, unsigned int key)
       	exit (EXIT_FAILURE);
     }
 
-    /* Initialisation of permutation */
-	if ((permutation = malloc (4000 * sizeof (*permutation))) == NULL)
-    {
-      	fprintf (stderr, "stegano: error: out of memory !");
-      	exit (EXIT_FAILURE);
-    }
-
-    /* Initialisation of message */
-	if ((message = malloc (512 * sizeof (*message))) == NULL)
-    {
-      	fprintf (stderr, "stegano: error: out of memory !");
-      	exit (EXIT_FAILURE);
-    }
-
 	if (loadBitmapHeader (imgSrc, header) == 0)
 	{
 		fprintf (stderr, "stegano: error: loadBitmapHeader failure\n");
@@ -309,6 +295,21 @@ static void retrieveMessage(FILE *imgSrc, unsigned int key)
 		fprintf (stderr, "stegano: error: isBitmapHeaderCorrect failure\n");
 		exit (EXIT_FAILURE);
 	}
+
+    /* Initialisation of permutation */ 
+	if ((permutation = malloc (header->bitmapDataSize * sizeof (*permutation))) == NULL)
+    {
+      	fprintf (stderr, "stegano: error: out of memory !");
+      	exit (EXIT_FAILURE);
+    }
+
+    /* Initialisation of message */
+    // Nombre d'octets modifiable / 8 = Nombre d'octets max du message
+	if ((message = malloc ((header->bitmapDataSize/8) * sizeof (*message))) == NULL)
+    {
+      	fprintf (stderr, "stegano: error: out of memory !");
+      	exit (EXIT_FAILURE);
+    }
 
 	//print_header (header);
 
