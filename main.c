@@ -87,7 +87,7 @@ int main (int argc, char *argv[])
 				key = atoi (argv[optind+2]);
 
 				size = strlen (argv[optind+3]);
-				if ((message = malloc (4000 * sizeof (*message))) == NULL)
+				if ((message = malloc ((size + 1) * sizeof (*message))) == NULL)
 			    {
 			      	fprintf (stderr, "stegano: error: out of memory !");
 			      	exit (EXIT_FAILURE);
@@ -209,7 +209,7 @@ static void hideMessage(FILE *imgSrc, FILE *imgDest, char *message, unsigned int
 {
 	//FILE *imgDest = NULL;
   	BMP_HEADER *header = NULL;
-  	int *permutation = NULL;
+  	unsigned int *permutation = NULL;
   	unsigned char *pixels = NULL;
 
 	/* Initialisation of header */
@@ -271,7 +271,7 @@ static void hideMessage(FILE *imgSrc, FILE *imgDest, char *message, unsigned int
 static void retrieveMessage(FILE *imgSrc, unsigned int key)
 {
 	BMP_HEADER *header = NULL;
-  	int *permutation = NULL;
+  	unsigned int *permutation = NULL;
   	unsigned char *pixels = NULL;
   	char *message = NULL;
 
@@ -297,7 +297,8 @@ static void retrieveMessage(FILE *imgSrc, unsigned int key)
 	}
 
     /* Initialisation of permutation */ 
-	if ((permutation = malloc (header->bitmapDataSize * sizeof (*permutation))) == NULL)
+	//if ((permutation = malloc (header->bitmapDataSize * sizeof (*permutation))) == NULL)
+	if ((permutation = malloc (4000 * sizeof (*permutation))) == NULL)
     {
       	fprintf (stderr, "stegano: error: out of memory !");
       	exit (EXIT_FAILURE);
@@ -305,7 +306,8 @@ static void retrieveMessage(FILE *imgSrc, unsigned int key)
 
     /* Initialisation of message */
     // Nombre d'octets modifiable / 8 = Nombre d'octets max du message
-	if ((message = malloc ((header->bitmapDataSize/8) * sizeof (*message))) == NULL)
+	//if ((message = malloc ((header->bitmapDataSize/8) * sizeof (*message))) == NULL)
+	if ((message = malloc ((4000 / 8) * sizeof (*message))) == NULL)
     {
       	fprintf (stderr, "stegano: error: out of memory !");
       	exit (EXIT_FAILURE);

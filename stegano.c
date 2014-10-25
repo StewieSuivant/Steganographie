@@ -532,19 +532,21 @@ int saveBitmapDatas(FILE *file, BMP_HEADER *header, unsigned char *pixels)
 /***********************************************************
             createPermutationFunction function
 ***********************************************************/
-void createPermutationFunction(int *tab, int size, unsigned int key)
+void createPermutationFunction(unsigned int *tab, int size, unsigned int key)
 {
 	srand (key);
 
 	// On remplit la 1ere ligne de facon non aléatoire
-  	for (int i = 0; i < size; i++)
+	// Pb car i est un int. Tester avec double, long long double, etc...
+  	for (unsigned int i = 0; i < size; i++)
     {
     	//printf("%d\n", i);
     	tab[i] = i;
+    	//printf("tab[%d] = %d\n", i, tab[i]);
     }
 
   	// On crée l'aléatoire sur la 1ere ligne
-  	for (int i = 0; i < size; i++)
+  	for (unsigned int i = 0; i < size; i++)
     {
      	int tmp = 0;
       	int rand_x = rand () % (size);
@@ -555,13 +557,18 @@ void createPermutationFunction(int *tab, int size, unsigned int key)
       	tab[rand_x] = tab[rand_y];
       	tab[rand_y] = tmp;
     }
+
+    /*for (int i = 0; i < 80; i++)
+    {
+    	printf("tab[%d] = %d\n", i, tab[i]);
+    }*/
 }
 
 
 /***********************************************************
             	hideText function
 ***********************************************************/
-int hideText(char *message, int *size, int *tab, unsigned char *pixels)
+int hideText(char *message, int *size, unsigned int *tab, unsigned char *pixels)
 {
 	for (int i=0; i<((*size)*8); i++)
 	{

@@ -36,7 +36,7 @@ int isBitmapHeaderCorrect(BMP_HEADER *header);
 int getBit(char *m, int n);
 unsigned char *loadBitmapDatas(FILE *file, BMP_HEADER *header);
 int saveBitmapDatas(FILE *file, BMP_HEADER *header, unsigned char *pixels);
-void createPermutationFunction(int *tab, int size, unsigned int key);
-int hideText(char *message, int *size, int *tab, unsigned char *pixels);
+void createPermutationFunction(unsigned int *tab, int size, unsigned int key);
+int hideText(char *message, int *size, unsigned int *tab, unsigned char *pixels);
 
 #endif /* STEGANO_H */
