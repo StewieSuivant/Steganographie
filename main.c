@@ -9,12 +9,11 @@
 #include "stegano.h"
 
 /* IDEES D'AMELIORATION
-0) Limité à 499 caractères pour le moment pour le -r (due à la taille du tableau de permutation).
 1) -g avec argument optionnel. Si argument, c'est le fichier dest, sinon, prendre fichier source.bmp et renvoyer source_ok.bmp.
 2) Proposer une option pour écrire le message à cacher dans l'appel du programme.
 3) Proposer via une option d'envoyer un fichier à cacher dans l'image.
 4) free (message) impossible pour l'option -g, donc memoire non désalloué avant la fin du programme.
-5) Tester le message entré pour vérifier qu'il ne contient pas de caractères interdit.
+5) Tester le message entré pour vérifier qu'il ne contient pas de caractères interdit et vérifier qu'il n'est pas supérieur à bitmapDataSize
 6) Docummenter beaucoup plus le code
 */
 
